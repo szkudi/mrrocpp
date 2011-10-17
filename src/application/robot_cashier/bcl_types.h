@@ -21,9 +21,9 @@
 
 ///Definition of movement positions
 #ifdef IRP6_OT
-#define VEC_SIZE 7
 #ifdef JOINT
-	const double left[] = { 0.0, 0.5, -1.87, 0.100, -0.040, 4.627, -1.57};
+#define VEC_SIZE 7
+const double left[] = { 0.0, 0.5, -1.87, 0.100, -0.040, 4.627, -1.57};
 	const double right[] = { 0.0, -0.55, -1.37, 0.100, -0.040, 4.627, -1.57};
 	const double start[] = { 0.0, 0.0, -1.37, 0.100, -0.040, 4.627, 0.0};
 #endif//JOINT
