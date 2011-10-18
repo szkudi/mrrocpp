@@ -12,7 +12,7 @@
 #include "base/ecp/ecp_sub_task.h"
 #include "bcl_types.h"
 #include <boost/shared_ptr.hpp>
-#include "bclike_gen.h"
+#include "ecp_bcl_gen.h"
 #include "ecp_mp_message.h"
 
 using boost::shared_ptr;
@@ -49,7 +49,7 @@ public:
 	void conditional_execution();
 
 private:
-	shared_ptr<generator::bclike_gen> bcl_gen;
+	shared_ptr<generator::ecp_bcl_gen> bcl_gen;
 	task::bcl_t_switcher & bcl_ecp;
 
 	ecp_mp_message msg;

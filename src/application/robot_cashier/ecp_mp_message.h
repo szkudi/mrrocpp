@@ -18,8 +18,8 @@ namespace ecp {
 namespace common {
 
 
-/**C
- * lass used to make messages from various types of data
+/**
+ * Class used to make messages from various types of data
  * and data from strings sent as orders
  */
 class ecp_mp_message

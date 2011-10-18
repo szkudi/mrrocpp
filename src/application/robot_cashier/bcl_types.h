@@ -13,6 +13,15 @@
 //#include "../servovision/visual_servo_types.h"
 #include "../../base/lib/impconst.h"
 
+namespace mrrocpp {
+
+namespace ecp {
+
+namespace common {
+
+namespace task {
+
+
 #define IRP6_OT
 //#define IRP6_P
 //#define JOINT
@@ -57,13 +66,6 @@ const double left[] = { 0.0, 0.5, -1.87, 0.100, -0.040, 4.627, -1.57};
 //#define MP_2_ECP_STRING_SIZE 300
 #define VEC_POS 27
 
-namespace mrrocpp {
-
-namespace ecp {
-
-namespace common {
-
-namespace task {
 
 /**
  * Structure used in communication between MRROC++ and DisCoDe
@@ -95,11 +97,6 @@ typedef struct {
 	double r;
 
 } mrrocpp_regions;
-
-/**
- * Definition of FraDIA sensor type with specified structures
- */
-//typedef ecp_mp::sensor::fradia_sensor<lib::empty_t, fradia_regions> bcl_fradia_sensor;
 
 }
 

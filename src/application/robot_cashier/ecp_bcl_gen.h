@@ -33,19 +33,19 @@ class ecp_bcl_gen: public mrrocpp::ecp::common::generator::newsmooth {
 //class ecp_bcl_gen: public mrrocpp::ecp::common::generator::constant_velocity {
 public:
 	/**
-	 * Class constructor without creating FraDIA sensor
+	 * Class constructor without creating DisCODe sensor
 	 * @param ecp_task parent task
 	 */
 	ecp_bcl_gen(mrrocpp::ecp::common::task::task & ecp_task);
-//	/**
-//	 * Class constructor, FraDIA sensor is acquired from parent task
-//	 * @param task parent task
-//	 */
+	/**
+	 * Class constructor, DisCODe sensor is acquired from parent task
+	 * @param task parent task
+	 */
 //	ecp_bcl_gen(mrrocpp::ecp::common::task::ecp_bcl_t_test & task);
 	/**
 	 * Class constructor, DisCODe sensor is given as a parameter
 	 * @param task parent task
-	 * @param fr pointer to FraDIA sensor structure
+	 * @param fr pointer to DisCODe sensor structure
 	 */
 //	ecp_bcl_gen(mrrocpp::ecp::common::task::ecp_bcl_t_test & task, mrrocpp::ecp_mp::sensor::discode::discode_sensor* dc);
 
@@ -82,13 +82,13 @@ private:
 
 	/**
 	 * Translating code positions from local image position, to global robot positon
-	 * @param regs packet received from FraDIA
+	 * @param regs packet received from DisCODe
 	 */
 	void translateToRobotPosition(task::fradia_regions& regs);
 	/**
-	 * Function rewriting codes received from FraDIA to local container if they haven't been
+	 * Function rewriting codes received from DisCODe to local container if they haven't been
 	 * there earlier
-	 * @param reading packet received from FraDIA framework
+	 * @param reading packet received from DisCODe framework
 	 */
 	void addCodesToVector(task::fradia_regions reading);
 	/**

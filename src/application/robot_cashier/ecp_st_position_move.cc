@@ -24,9 +24,7 @@ ecp_st_position_move::ecp_st_position_move(task::task & _ecp_t):
 
 	std::cout << "ECP_ST_POSITION_MOVE" << std::endl;
 
-	//Creating new smart pointer to generator object
-//	smooth = shared_ptr<generator::newsmooth>(new generator::bclike_smooth((bcl_t_switcher &)ecp_t, bcl_ecp.get_vsp_fradia()));
-
+//Creating new smart pointer to generator object
 #ifdef IRP6_OT
 #ifdef JOINT
 	smooth = shared_ptr<generator::newsmooth> (new generator::newsmooth(ecp_t, lib::ECP_JOINT, 7));

@@ -14,6 +14,8 @@
 #include "robot/irp6p_m/mp_r_irp6p_m.h"
 #include "robot/irp6ot_m/mp_r_irp6ot_m.h"
 
+#include "bcl_types.h"
+
 namespace mrrocpp {
 
 namespace mp {
@@ -58,46 +60,46 @@ void bclike_mp_test::main_task_algorithm(void){
 	std::vector<double> vec;
 
 //	Set robot to start position (center)
-//	vec.clear();
-//	vec.assign(ecp::common::task::left, ecp::common::task::left + VEC_SIZE);
-//	tab = msg.robotPositionToString(vec);
-//
-//	set_next_ecp_state (ecp_mp::task::ECP_ST_POSITION_MOVE, 0, tab, lib::ECP_2_MP_STRING_SIZE, actual_robot);
-//	sr_ecp_msg->message("MOVE left");
-//	wait_for_task_termination(false, 1, actual_robot.c_str());
+	vec.clear();
+	vec.assign(ecp::common::task::left, ecp::common::task::left + VEC_SIZE);
+	tab = msg.robotPositionToString(vec);
+
+	set_next_ecp_state (ecp_mp::task::ECP_ST_POSITION_MOVE, 0, tab, lib::ECP_2_MP_STRING_SIZE, actual_robot);
+	sr_ecp_msg->message("MOVE left");
+	wait_for_task_termination(false, 1, actual_robot.c_str());
 
 
 	int i = 0;
 
 	//Move robot between three control points continuously
 	while(1){
-//		std::cout << "SEND" << std::endl;
-//		switch(i){
-//			case 0:
-//				vec.clear();
-//				vec.assign(ecp::common::task::left, ecp::common::task::left + VEC_SIZE);
-//				tab = msg.robotPositionToString(vec);
-//				sr_ecp_msg->message("RIGHT send");
-//				break;
-//			case 1:
-//				vec.clear();
-//				vec.assign(ecp::common::task::right, ecp::common::task::right + VEC_SIZE);
-//				tab = msg.robotPositionToString(vec);
-//				sr_ecp_msg->message("LEFT send");
-//				break;
-//			case 2:
-//				vec.clear();
-//				vec.assign(ecp::common::task::start, ecp::common::task::start + VEC_SIZE);
-//				tab = msg.robotPositionToString(vec);
-//				sr_ecp_msg->message("START send");
-//				break;
-//		}
-//
-//		i++;
-//		i = i % 3;
-//
-//		set_next_ecp_state (ecp_mp::task::ECP_ST_POSITION_MOVE, 0, tab, lib::ECP_2_MP_STRING_SIZE, actual_robot);
-//		wait_for_task_termination(false, 1, actual_robot.c_str());
+		std::cout << "SEND" << std::endl;
+		switch(i){
+			case 0:
+				vec.clear();
+				vec.assign(ecp::common::task::left, ecp::common::task::left + VEC_SIZE);
+				tab = msg.robotPositionToString(vec);
+				sr_ecp_msg->message("RIGHT send");
+				break;
+			case 1:
+				vec.clear();
+				vec.assign(ecp::common::task::right, ecp::common::task::right + VEC_SIZE);
+				tab = msg.robotPositionToString(vec);
+				sr_ecp_msg->message("LEFT send");
+				break;
+			case 2:
+				vec.clear();
+				vec.assign(ecp::common::task::start, ecp::common::task::start + VEC_SIZE);
+				tab = msg.robotPositionToString(vec);
+				sr_ecp_msg->message("START send");
+				break;
+		}
+
+		i++;
+		i = i % 3;
+
+		set_next_ecp_state (ecp_mp::task::ECP_ST_POSITION_MOVE, 0, tab, lib::ECP_2_MP_STRING_SIZE, actual_robot);
+		wait_for_task_termination(false, 1, actual_robot.c_str());
 
 		sr_ecp_msg->message("MP end loop");
 

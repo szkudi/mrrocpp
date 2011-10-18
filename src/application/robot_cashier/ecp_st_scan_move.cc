@@ -25,7 +25,7 @@ ecp_st_scan_move::ecp_st_scan_move(task::task & _ecp_t):
 	std::cout << "ECP_ST_SMOOT_MOVE" << std::endl;
 
 	//Creating new smart pointer to generator object
-	bcl_gen = shared_ptr<generator::bclike_gen>(new generator::bclike_gen((task::bcl_t_switcher &)ecp_t, bcl_ecp.get_vsp_discode()));
+	bcl_gen = shared_ptr<generator::ecp_bcl_gen>(new generator::ecp_bcl_gen((task::bcl_t_switcher &)ecp_t));
 
 }
 

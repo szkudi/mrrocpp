@@ -11,8 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include "base/ecp/ecp_task.h"
 #include "ecp_bcl_gen.h"
-#include "robot/irp6ot_m/ecp_r_irp6ot_m.h"
-#include "robot/irp6p_m/ecp_r_irp6p_m.h"
+
 
 #include "bcl_types.h"
 
@@ -38,9 +37,13 @@ public:
 //	task_base* return_created_ecp_task(lib::configurator &_config);
 
 private:
-//	shared_ptr<generator::ecp_bcl_gen> bcl_gen;
-	shared_ptr<generator::newsmooth> bcl_gen;
+	shared_ptr<generator::ecp_bcl_gen> bcl_gen;
+//	shared_ptr<generator::newsmooth> bcl_gen;
 //	shared_ptr<generator::constant_velocity> bcl_gen;
+
+	void makeMove(std::vector<double> &vec);
+
+	subtasks_t sub;
 
 };
 

@@ -27,10 +27,11 @@ bcl_t_switcher::bcl_t_switcher(lib::configurator &_config):
 {
 	std::cout << "TWORZE BCL SWITCHER" << std::endl;
 
-	//Creating new fradia sensor
-	vsp_discode = new mrrocpp::ecp_mp::sensor::discode::discode_sensor(this->config, "[vsp_fradia_sensor]");
-	sensor_m["my_discode_sensor"] = vsp_discode;
-	sensor_m["my_discode_sensor"]->configure_sensor();
+	//Creating new discode sensor
+	vsp_discode = NULL;
+//	vsp_discode = new mrrocpp::ecp_mp::sensor::discode::discode_sensor(this->config, "[vsp_fradia_sensor]");
+//	sensor_m["my_discode_sensor"] = vsp_discode;
+//	sensor_m["my_discode_sensor"]->configure_sensor();
 
 
 #ifdef IRP6_OT

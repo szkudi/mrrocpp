@@ -7,7 +7,8 @@
 
 #include "ecp_bcl_gen.h"
 #include "ecp_bcl_t_test.h"
-//#include "bcl_t_switcher.h"
+#include "bcl_t_switcher.h"
+#include "BCLReading.h"
 #include <cstring>
 
 namespace mrrocpp {
@@ -98,9 +99,9 @@ ecp_bcl_gen::~ecp_bcl_gen() {
 
 bool ecp_bcl_gen::first_step(){
 
-//	the_robot->ecp_command.instruction_type = lib::GET;
-//	the_robot->ecp_command.get_type = ARM_DEFINITION;
-//	the_robot->ecp_command.get_arm_type = return_pos_type;
+	the_robot->ecp_command.instruction_type = lib::GET;
+	the_robot->ecp_command.get_type = ARM_DEFINITION;
+	the_robot->ecp_command.get_arm_type = return_pos_type;
 
 //	if(no_discode){
 //		std::cout << "ERROR: no fradia == TRUE" << std::endl;
@@ -117,10 +118,10 @@ bool ecp_bcl_gen::next_step(){
 //	reading = bcl_ecp.vsp_discode->get_reading_message();
 //
 	//Get actual robot's position
-//	actual_pos = the_robot->reply_package.arm.pf_def.arm_frame;
-//	std::vector<double> vec;
-//	vec.assign(the_robot->reply_package.arm.pf_def.arm_coordinates, the_robot->reply_package.arm.pf_def.arm_coordinates + VEC_SIZE);
-//
+	actual_pos = the_robot->reply_package.arm.pf_def.arm_frame;
+	std::vector<double> vec;
+	vec.assign(the_robot->reply_package.arm.pf_def.arm_coordinates, the_robot->reply_package.arm.pf_def.arm_coordinates + VEC_SIZE);
+
 //	//If there are new bar code like areas translate their positions and check existance in vector
 //	if(reading.code_found){
 //		reading.code_found = false;
