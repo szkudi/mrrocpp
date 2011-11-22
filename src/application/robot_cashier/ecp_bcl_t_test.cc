@@ -16,6 +16,7 @@
 #include "ecp_st_scan_move.h"
 #include "ecp_st_position_move.h"
 
+
 using boost::shared_ptr;
 
 namespace mrrocpp {
@@ -38,8 +39,12 @@ ecp_bcl_t_test::ecp_bcl_t_test(mrrocpp::lib::configurator& configurator):common:
 	ecp_m_robot = (boost::shared_ptr<robot_t) new ecp::irp6p_m::robot(*this);
 #endif//IRP6_P
 
+	mrrocpp::ecp_mp::sensor::discode::discode_sensor *ds = new mrrocpp::ecp_mp::sensor::discode::discode_sensor(this->config, "[vsp_discode_sensor]");
+	sensor_m["my_discode_sensor"] = ds;
+	sensor_m["my_discode_sensor"]->configure_sensor();
 
-	this->bcl_gen = shared_ptr<generator::ecp_bcl_gen> (new common::generator::ecp_bcl_gen(*this));
+
+	this->bcl_gen = shared_ptr<generator::ecp_bcl_gen> (new common::generator::ecp_bcl_gen(*this, ds));
 //	this->bcl_gen = shared_ptr<generator::newsmooth> (new common::generator::newsmooth(*this, lib::ECP_XYZ_ANGLE_AXIS, VEC_SIZE));
 //	this->bcl_gen = shared_ptr<generator::constant_velocity> (new common::generator::constant_velocity(*this, lib::ECP_XYZ_EULER_ZYZ, VEC_SIZE));
 
@@ -98,28 +103,6 @@ void ecp_bcl_t_test::main_task_algorithm(void){
 		sr_ecp_msg->message("MP end loop");
 
 	}
-
-////	double tmp[] = { 0.0, 0.5, -1.87, 0.100, -0.040, 4.627, -1.57, 0.0};
-//	std::vector<double> vec(left, left + VEC_SIZE);
-//	std::cout << "LOAD TRAJECTORY" << " Vec size: " <<  vec.size() << std::endl;
-//
-//	bcl_gen->reset();
-////	bcl_gen->set_absolute();
-//
-////	bcl_gen->load_absolute_joint_trajectory_pose(vec);
-////	if(!bcl_gen->load_absolute_euler_zyz_trajectory_pose(vec))
-//	if(!bcl_gen->load_absolute_angle_axis_trajectory_pose(vec))
-//		return;
-//	std::cout << "CALCUATE INTERPOLATE" << std::endl;
-//	if(bcl_gen->calculate_interpolate()){
-//		std::cout << "MOVE" << std::endl;
-//		bcl_gen->Move();
-//		std::cout << "RESET" << std::endl;
-//		bcl_gen->reset();
-//		std::cout << "NOTICE" << std::endl;
-//	}
-//	termination_notice();
-//	std::cout << "BLC END" << std::endl;
 
 }
 

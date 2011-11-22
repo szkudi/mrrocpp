@@ -11,6 +11,12 @@
 #include "BCLReading.h"
 #include <cstring>
 
+#include "base/lib/logger.h"
+
+#include <iostream>
+#include <stdexcept>
+#include <algorithm>
+
 namespace mrrocpp {
 
 namespace ecp {
@@ -53,9 +59,10 @@ ecp_bcl_gen::ecp_bcl_gen(mrrocpp::ecp::common::task::task & ecp_task) :
 		mrrocpp::ecp::common::generator::newsmooth(ecp_task, move_type, joint_num),
 		bcl_ecp((task::ecp_bcl_t_test &)ecp_t), num_send(0){
 
-	vsp_discode = NULL;
-	no_discode = true;
+	this->debug = false;
 
+	vsp_discode = NULL;
+	no_discode = false;
 }
 
 
@@ -78,20 +85,22 @@ ecp_bcl_gen::ecp_bcl_gen(mrrocpp::ecp::common::task::task & ecp_task) :
 //}
 
 
-//bclike_gen::bclike_gen(mrrocpp::ecp::common::task::ecp_bcl_t_test & task, mrrocpp::ecp_mp::sensor::discode::discode_sensor* dc):
-//						common::generator::constant_velocity((mrrocpp::ecp::common::task::task &)task, move_type, joint_num),
-//						bcl_ecp((task::ecp_bcl_t_test &)ecp_t),
-//						vsp_discode(dc), num_send(0){
-//
-//	no_discode = false;
-//
-//	if(vsp_discode != NULL){
-//		sensor_m["my_discode_sensor"] = vsp_discode;
-//		vsp_discode->base_period = 1;
-//
-//		std::cout << "SENSOR ADD vsp constructor" << std::endl;
-//	}
-//}
+ecp_bcl_gen::ecp_bcl_gen(mrrocpp::ecp::common::task::task & ecp_task, mrrocpp::ecp_mp::sensor::discode::discode_sensor* ds):
+						mrrocpp::ecp::common::generator::newsmooth(ecp_task, move_type, joint_num),
+						bcl_ecp((task::ecp_bcl_t_test &)ecp_t),
+						vsp_discode(ds), num_send(0){
+
+	this->debug = false;
+
+	no_discode = false;
+
+	if(vsp_discode != NULL){
+		sensor_m["my_discode_sensor"] = vsp_discode;
+		vsp_discode->base_period = 1;
+
+		std::cout << "SENSOR ADD vsp constructor" << std::endl;
+	}
+}
 
 ecp_bcl_gen::~ecp_bcl_gen() {
 }
@@ -103,10 +112,10 @@ bool ecp_bcl_gen::first_step(){
 	the_robot->ecp_command.get_type = ARM_DEFINITION;
 	the_robot->ecp_command.get_arm_type = return_pos_type;
 
-//	if(no_discode){
-//		std::cout << "ERROR: no fradia == TRUE" << std::endl;
-//		return false;
-//	}
+	if(no_discode){
+		std::cout << "ERROR: no discode == TRUE" << std::endl;
+		return false;
+	}
 
 	return newsmooth::first_step();
 //	return constant_velocity::first_step();
@@ -116,46 +125,46 @@ bool ecp_bcl_gen::next_step(){
 
 //	//Get FraDIA reading
 //	reading = bcl_ecp.vsp_discode->get_reading_message();
+
+	try {
+		if (vsp_discode->get_state() == mrrocpp::ecp_mp::sensor::discode::discode_sensor::DSS_READING_RECEIVED) {
+			//			log_dbg("pb_visual_servo::retrieve_reading(): sensor->get_state() == discode_sensor::DSS_READING_RECEIVED.\n");
+			reading = vsp_discode->retreive_reading <Types::Mrrocpp_Proxy::BCLReading > ();
+		}
+	} catch (std::exception &ex) {
+		logger::log("ecp_bcl_gen::retrieve_reading(): %s\n", ex.what());
+	}
 //
 	//Get actual robot's position
 	actual_pos = the_robot->reply_package.arm.pf_def.arm_frame;
 	std::vector<double> vec;
 	vec.assign(the_robot->reply_package.arm.pf_def.arm_coordinates, the_robot->reply_package.arm.pf_def.arm_coordinates + VEC_SIZE);
 
-//	//If there are new bar code like areas translate their positions and check existance in vector
-//	if(reading.code_found){
-//		reading.code_found = false;
+//	If there are new bar code like areas translate their positions and check existance in vector
+	if(reading.codeFound()){
 //		double t[3];
 //		actual_pos.get_translation_vector(t);
-//		translateToRobotPosition(reading);
-//		addCodesToVector(reading);
-////		std::cout << "KODOW DO WYSANIA: " << readings.size() << std::endl;
-//	}
-//
-//	//If there is something to send, do it
-//	if(sendNextPart()){
-////		newsmooth::reset();
-//		return false;
-//	}
-//
+		translateToRobotPositionAndSave(reading);
+//		std::cout << "KODOW: " << readings.size() << std::endl;
+	}
+
 //	//If there is nothing to send and robot is still moving, go on
 	if(newsmooth::next_step()){
 		return true;
 	}
-//
+
 //	if(constant_velocity::next_step()){
 //		return true;
 //	}
-//
+
 //	//End everything, when there is nothing to send and robot stops
-//	strcpy(ecp_t.ecp_reply.recognized_command, "KONIEC");
 //	readings.clear();
 	return false;
 
 }
 
 
-void ecp_bcl_gen::translateToRobotPosition(task::fradia_regions& regs){
+void ecp_bcl_gen::translateToRobotPositionAndSave(Types::Mrrocpp_Proxy::BCLReading& regs){
 
 	lib::K_vector u_translation(0, 0, 0);
 	lib::Homog_matrix u_rotation;
@@ -173,7 +182,16 @@ void ecp_bcl_gen::translateToRobotPosition(task::fradia_regions& regs){
 
 	lib::Xyz_Euler_Zyz_vector new_pos;
 
-	for(int i = 0; i < regs.num_found; ++i){
+	Types::ImagePosition region;
+
+
+	for(int i = 0; i < regs.getCount(); ++i){
+
+		std::cout << "Kolejny odczyt" << std::endl;
+
+		region = regs.getElementAt(i);
+
+//		std::cout << "Region nr: " << i << " x = " << region.elements[0] << " y = " << region.elements[1] << " w = " << region.elements[2] << " h = " << region.elements[3] << std::endl;
 
 		e.setZero();
 		Kp.setZero();
@@ -181,25 +199,9 @@ void ecp_bcl_gen::translateToRobotPosition(task::fradia_regions& regs){
 		control.setZero();
 		camera_to_object_translation.setZero();
 
-		switch(i){
-			case 0:
-				e(0, 0) = regs.x_k0;
-				e(1, 0) = regs.y_k0;
-				break;
-			case 1:
-				e(0, 0) = regs.x_k1;
-				e(1, 0) = regs.y_k1;
-				break;
-			case 2:
-				e(0, 0) = regs.x_k2;
-				e(1, 0) = regs.y_k2;
-				break;
-			case 3:
-				e(0, 0) = regs.x_k3;
-				e(1, 0) = regs.y_k3;
-				break;
+		e(0,0) = region.elements[0]; //x
+		e(1,0) = region.elements[1]; //y
 
-		}
 		e(2, 0) = 0;
 		e(3, 0) = 0;
 
@@ -238,80 +240,45 @@ void ecp_bcl_gen::translateToRobotPosition(task::fradia_regions& regs){
 
 		tmp_pos.get_xyz_euler_zyz(new_pos);
 
-		switch(i){
-			case 0:
-				regs.x_k0 = new_pos(0,0);
-				regs.y_k0 = new_pos(1,0);
-				regs.r_k0 = regs.r_k0 * 0.1 / 210;
-				break;
-			case 1:
-				regs.x_k1 = new_pos(0,0);
-				regs.y_k1 = new_pos(1,0);
-				regs.r_k1 = regs.r_k1 * 0.1 / 210;
-				break;
-			case 2:
-				regs.x_k2 = new_pos(0,0);
-				regs.y_k2 = new_pos(1,0);
-				regs.r_k2 = regs.r_k2 * 0.1 / 210;
-				break;
-			case 3:
-				regs.x_k3 = new_pos(0,0);
-				regs.y_k3 = new_pos(1,0);
-				regs.r_k3 = regs.r_k3 * 0.1 / 210;
-				break;
-		}
+//		regs.getElementAt(i).elements[0] = new_pos(0,0); //x
+//		regs.getElementAt(i).elements[1] = new_pos(1,0); //y
+//		regs.getElementAt(i).elements[2] *= (0.1 / 210); //w
+//		regs.getElementAt(i).elements[3] *= (0.1 / 210); //h
+
+		task::mrrocpp_regions mr_region;
+
+		mr_region.x = new_pos(0,0);
+		mr_region.y = new_pos(1,0);
+
+		double ratio = mr_region.x/region.elements[0];
+
+		mr_region.w = region.elements[2] * ratio;//(0.1 / 210);
+		mr_region.h = region.elements[3] * ratio;//(0.1 / 210);
+
+//		std::cout << "Region nr: " << i << " x = " << mr_region.x << " y = " << mr_region.y << " w = " << mr_region.w << " h = " << mr_region.h << std::endl;
+
+		if(!checkIfCodeBeenRead(mr_region))
+			readings.push_back(std::pair<task::mrrocpp_regions, bool>(mr_region, false));
+
 	}
 
 }
 
-
-void ecp_bcl_gen::addCodesToVector(task::fradia_regions reading){
-
-	task::mrrocpp_regions tmp;
-
-	switch(reading.num_found){
-		case 4:
-			tmp.x = reading.x_k3;
-			tmp.y = reading.y_k3;
-			tmp.r = reading.r_k3;
-			if(!checkIfCodeBeenRead(tmp))
-				readings.push_back(std::pair<task::mrrocpp_regions, bool>(tmp, false));
-		case 3:
-			tmp.x = reading.x_k2;
-			tmp.y = reading.y_k2;
-			tmp.r = reading.r_k2;
-			if(!checkIfCodeBeenRead(tmp))
-				readings.push_back(std::pair<task::mrrocpp_regions, bool>(tmp, false));
-		case 2:
-			tmp.x = reading.x_k1;
-			tmp.y = reading.y_k1;
-			tmp.r = reading.r_k1;
-			if(!checkIfCodeBeenRead(tmp))
-				readings.push_back(std::pair<task::mrrocpp_regions, bool>(tmp, false));
-		case 1:
-			tmp.x = reading.x_k0;
-			tmp.y = reading.y_k0;
-			tmp.r = reading.r_k0;
-			if(!checkIfCodeBeenRead(tmp))
-				readings.push_back(std::pair<task::mrrocpp_regions, bool>(tmp, false));
-			break;
-		case 0:
-			break;
-	}
-
-}
 
 
 bool ecp_bcl_gen::checkIfCodeBeenRead(task::mrrocpp_regions& code){
+
+	//TODO: Dodać opcję wysokosci do sprawdzania czy kody się przecinają
 
 	std::vector<std::pair<task::mrrocpp_regions, bool> >::iterator it;
 
 	for(it = readings.begin(); it != readings.end(); ++ it){
 		if(codesIntersect(code, (*it).first)){
-			(*it).first.x = ((*it).first.x + code.x)/2;
-			(*it).first.y = ((*it).first.y + code.y)/2;
-			//(*it).first.r = sqrt(((*it).first.x - code.x)*((*it).first.x - code.x) + ((*it).first.y - code.y)*((*it).first.y - code.y))/2 + ((*it).first.r + code.r)/2;
-			(*it).first.r = hypot(((*it).first.x - code.x), ((*it).first.y - code.y))/2 + ((*it).first.r + code.r)/2;
+			(*it).first.x = std::min((*it).first.x,code.x);
+			(*it).first.y = std::max((*it).first.y, code.y);
+
+			(*it).first.w = std::fabs(std::max((*it).first.x + (*it).first.w, code.x + code.w) - (*it).first.x);
+			(*it).first.h = std::fabs(std::min((*it).first.y + (*it).first.h, code.y + code.h) - (*it).first.h);
 
 			return true;
 		}
@@ -322,56 +289,40 @@ bool ecp_bcl_gen::checkIfCodeBeenRead(task::mrrocpp_regions& code){
 
 bool ecp_bcl_gen::codesIntersect(task::mrrocpp_regions& c1, task::mrrocpp_regions& c2){
 
-	//if(sqrt((c1.x - c2.x)*(c1.x - c2.x) + (c1.y - c2.y)*(c1.y - c2.y)) < (c1.r + c2.r)){
-	if(hypot((c1.x - c2.x), (c1.y - c2.y)) < (c1.r + c2.r)){
+	task::mrrocpp_regions inter = codesIntersectionArea(c1, c2);
+
+	double area = std::min(c1.w * c1.h, c2.w * c2.h);
+
+//	std::cout << "Intersect w: " << inter.w << " h: " << inter.h << std::endl;
+	if(area / (inter.w * inter.h) > this->intersect_area)
 		return true;
-	}
+
 	return false;
+
+
 }
 
 
+task::mrrocpp_regions ecp_bcl_gen::codesIntersectionArea(task::mrrocpp_regions& c1, task::mrrocpp_regions& c2){
 
-bool ecp_bcl_gen::sendNextPart(){
+	task::mrrocpp_regions intersection;
 
-	char* ret = new char[lib::MP_2_ECP_STRING_SIZE];
-	double *tab = reinterpret_cast<double*>(ret);
+	intersection.x = std::max(c1.x, c2.x);
+	intersection.y = std::min(c1.y, c2.y);
 
-	//Write to matrix number of elements which will be written to
-	lib::Xyz_Euler_Zyz_vector new_pos;
-	std::vector<double> vec;
-	actual_pos.get_xyz_euler_zyz(new_pos);
-	new_pos.to_vector(vec);
-	tab[0] = vec.size();
+	double tmp = std::abs(std::min(c1.x + c1.w, c2.x + c2.w) - intersection.x);
 
-	int i = 1;
-	//Rewrite vector elements to matrix
-	for(std::vector<double>::iterator it = vec.begin(); (it != vec.end()) && (i < lib::MP_2_ECP_STRING_SIZE/sizeof(double)); ++it, ++i){
-		tab[i] = *it;
-	}
+	intersection.w = tmp > 0.0f ? tmp : 0.0f;
 
-	std::vector<std::pair<task::mrrocpp_regions, bool> >::iterator it;// = readings.begin();
+	tmp = std::abs(std::max(c1.y + c1.h, c2.y + c2.h) - intersection.y);
 
-	tab[i] = 0;
+	intersection.h = tmp > 0.0f ? tmp : 0.0f;
 
-	for(it = readings.begin(); it != readings.end() && ((i + 5 * tab[i] + 1) * sizeof(double) < lib::MP_2_ECP_STRING_SIZE); ++it){
-		if(!(*it).second){
-			tab[i + 3 * (int)tab[i] + 1] = (*it).first.x;
-			tab[i + 3 * (int)tab[i] + 2] = (*it).first.y;
-			tab[i + 3 * (int)tab[i] + 3] = (*it).first.r;
-			tab[i]++;
-			(*it).second = true;
-		}
-	}
+	return intersection;
+}
 
-
-	if(tab[i] > 0){
-		memcpy(ecp_t.ecp_reply.recognized_command, ret, sizeof(char) * lib::MP_2_ECP_STRING_SIZE);
-		delete(ret);
-		return true;
-	}else{
-		delete(ret);
-		return false;
-	}
+std::vector<std::pair<task::mrrocpp_regions, bool> > ecp_bcl_gen::getReadings(){
+	return readings;
 }
 
 }

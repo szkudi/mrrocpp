@@ -176,9 +176,9 @@ std::vector<double> ecp_mp_message::stringToECPOrder(const char* str, std::vecto
 	for(int i = 0; i < (int)tab[size]; ++i){
 		tmp.x = tab[size + 3 * i + 1];
 		tmp.y = tab[size + 3 * i + 2];
-		tmp.r = tab[size + 3 * i + 3];
+//		tmp.r = tab[size + 3 * i + 3];
 		vec.push_back(std::pair<ecp::common::task::mrrocpp_regions, bool>(tmp, false));
-		std::cout << "Znaleziono kod: x = " << tmp.x << " y = " << tmp.y << " r = " << tmp.r;
+//		std::cout << "Znaleziono kod: x = " << tmp.x << " y = " << tmp.y << " r = " << tmp.r;
 		std::cout << "\a" << std::endl;
 	}
 

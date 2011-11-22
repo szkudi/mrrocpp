@@ -34,8 +34,6 @@ public:
 	virtual ~ecp_bcl_t_test();
 	void main_task_algorithm(void);
 
-//	task_base* return_created_ecp_task(lib::configurator &_config);
-
 private:
 	shared_ptr<generator::ecp_bcl_gen> bcl_gen;
 //	shared_ptr<generator::newsmooth> bcl_gen;

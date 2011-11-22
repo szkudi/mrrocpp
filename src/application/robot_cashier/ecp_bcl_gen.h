@@ -15,6 +15,8 @@
 #include "bcl_types.h"
 #include "ecp_mp_message.h"
 
+#include "BCLReading.h"
+
 using boost::shared_ptr;
 
 namespace mrrocpp {
@@ -47,7 +49,7 @@ public:
 	 * @param task parent task
 	 * @param fr pointer to DisCODe sensor structure
 	 */
-//	ecp_bcl_gen(mrrocpp::ecp::common::task::ecp_bcl_t_test & task, mrrocpp::ecp_mp::sensor::discode::discode_sensor* dc);
+	ecp_bcl_gen(mrrocpp::ecp::common::task::task & ecp_task, mrrocpp::ecp_mp::sensor::discode::discode_sensor* ds);
 
 	/**
 	 * Class destructor
@@ -65,8 +67,12 @@ public:
 	 */
 	virtual bool first_step();
 
+	std::vector<std::pair<task::mrrocpp_regions, bool> > getReadings();
+
+
 private:
-	task::fradia_regions reading;
+//	task::fradia_regions reading;
+	Types::Mrrocpp_Proxy::BCLReading reading;
 	std::vector<std::pair<task::mrrocpp_regions, bool> > readings;
 	bool no_discode;
 	task::ecp_bcl_t_test & bcl_ecp;
@@ -80,17 +86,15 @@ private:
 	lib::Homog_matrix actual_pos;
 	lib::Homog_matrix tmp_pos;
 
+	static const double intersect_area = 0.2f;
+
 	/**
-	 * Translating code positions from local image position, to global robot positon
+	 * Translating code positions from local image position, to global robot positon and
+	 * rewriting codes received from DisCODe to local container if they haven't been
+	 * there earlier
 	 * @param regs packet received from DisCODe
 	 */
-	void translateToRobotPosition(task::fradia_regions& regs);
-	/**
-	 * Function rewriting codes received from DisCODe to local container if they haven't been
-	 * there earlier
-	 * @param reading packet received from DisCODe framework
-	 */
-	void addCodesToVector(task::fradia_regions reading);
+	void translateToRobotPositionAndSave(Types::Mrrocpp_Proxy::BCLReading& regs);
 	/**
 	 * Function to check if found code isn't already in memory vector
 	 * @param code Code which will be check if it intersect with any other code in vector
@@ -104,10 +108,8 @@ private:
 	 * @return true if codes intersect, false otherwise
 	 */
 	bool codesIntersect(task::mrrocpp_regions& c1, task::mrrocpp_regions& c2);
-	/**
-	 * Rewriting data from vector to buffer to send to MP
-	 */
-	bool sendNextPart();
+
+	task::mrrocpp_regions codesIntersectionArea(task::mrrocpp_regions& c1, task::mrrocpp_regions& c2);
 };
 
 }

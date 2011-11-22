@@ -94,7 +94,8 @@ typedef struct {
 typedef struct {
 	double x;
 	double y;
-	double r;
+	double w;
+	double h;
 
 } mrrocpp_regions;
 
